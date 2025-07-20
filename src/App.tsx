@@ -19,7 +19,9 @@ function App() {
     deleteSlide,
     duplicateSlide,
     updateBrandSettings,
-    updatePresentationMeta
+    updatePresentationMeta,
+    clearPresentation,
+    lastSaved
   } = usePresentation();
 
   const { toast } = useToast();
@@ -57,12 +59,14 @@ function App() {
     }
   };
 
-  const handleSave = () => {
-    // In a real app, this would save to a backend
-    toast({
-      title: "Presentation Saved",
-      description: "Your changes have been saved successfully.",
-    });
+  const handleNewPresentation = () => {
+    if (confirm('Are you sure you want to start a new presentation? Your current work will be saved automatically.')) {
+      clearPresentation();
+      toast({
+        title: "New Presentation Created",
+        description: "Started with a fresh presentation. Your previous work is auto-saved.",
+      });
+    }
   };
 
   const handleUpdateSlide = (updates: any) => {
@@ -89,7 +93,8 @@ function App() {
         presentation={presentation}
         onUpdatePresentation={updatePresentationMeta}
         onExportPPT={handleExportPPT}
-        onSave={handleSave}
+        onNewPresentation={handleNewPresentation}
+        lastSaved={lastSaved}
       />
 
       {/* Main Content Area */}

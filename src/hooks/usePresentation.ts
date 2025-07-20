@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Presentation, Slide, BrandSettings } from '../types/presentation';
+
+const STORAGE_KEY = 'presentation-builder-data';
 
 const defaultBrandSettings: BrandSettings = {
   primaryColor: '#6366F1',
@@ -20,17 +22,77 @@ const createDefaultSlide = (order: number): Slide => ({
   order
 });
 
-export const usePresentation = () => {
-  const [presentation, setPresentation] = useState<Presentation>({
-    id: 'presentation-1',
-    title: 'My Presentation',
-    slides: [createDefaultSlide(0)],
-    brandSettings: defaultBrandSettings,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  });
+const createDefaultPresentation = (): Presentation => ({
+  id: 'presentation-1',
+  title: 'My Presentation',
+  slides: [createDefaultSlide(0)],
+  brandSettings: defaultBrandSettings,
+  createdAt: new Date(),
+  updatedAt: new Date()
+});
 
+// Load presentation from localStorage
+const loadPresentation = (): Presentation => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Convert date strings back to Date objects
+      return {
+        ...parsed,
+        createdAt: new Date(parsed.createdAt),
+        updatedAt: new Date(parsed.updatedAt)
+      };
+    }
+  } catch (error) {
+    console.warn('Failed to load presentation from localStorage:', error);
+  }
+  return createDefaultPresentation();
+};
+
+// Save presentation to localStorage
+const savePresentation = (presentation: Presentation) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(presentation));
+  } catch (error) {
+    console.warn('Failed to save presentation to localStorage:', error);
+  }
+};
+
+export const usePresentation = () => {
+  const [presentation, setPresentation] = useState<Presentation>(loadPresentation);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [lastSaved, setLastSaved] = useState<Date>(new Date());
+
+  // Auto-save to localStorage whenever presentation changes
+  useEffect(() => {
+    savePresentation(presentation);
+    setLastSaved(new Date());
+  }, [presentation]);
+
+  // Load current slide index from localStorage
+  useEffect(() => {
+    try {
+      const savedIndex = localStorage.getItem('presentation-current-slide');
+      if (savedIndex) {
+        const index = parseInt(savedIndex, 10);
+        if (index >= 0 && index < presentation.slides.length) {
+          setCurrentSlideIndex(index);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load current slide index:', error);
+    }
+  }, [presentation.slides.length]);
+
+  // Save current slide index to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('presentation-current-slide', currentSlideIndex.toString());
+    } catch (error) {
+      console.warn('Failed to save current slide index:', error);
+    }
+  }, [currentSlideIndex]);
 
   const addSlide = useCallback((type: Slide['type'] = 'content') => {
     setPresentation(prev => {
@@ -136,6 +198,15 @@ export const usePresentation = () => {
     }));
   }, []);
 
+  // Clear saved data (useful for starting fresh)
+  const clearPresentation = useCallback(() => {
+    const newPresentation = createDefaultPresentation();
+    setPresentation(newPresentation);
+    setCurrentSlideIndex(0);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('presentation-current-slide');
+  }, []);
+
   const currentSlide = presentation.slides[currentSlideIndex];
 
   return {
@@ -149,6 +220,8 @@ export const usePresentation = () => {
     duplicateSlide,
     reorderSlides,
     updateBrandSettings,
-    updatePresentationMeta
+    updatePresentationMeta,
+    clearPresentation,
+    lastSaved
   };
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { Badge } from './ui/badge';
 import { 
   Download, 
@@ -13,7 +13,9 @@ import {
   FileText,
   MoreHorizontal,
   Undo,
-  Redo
+  Redo,
+  Plus,
+  Check
 } from 'lucide-react';
 import { Presentation } from '../types/presentation';
 
@@ -21,14 +23,16 @@ interface TopNavigationProps {
   presentation: Presentation;
   onUpdatePresentation: (updates: { title?: string; description?: string }) => void;
   onExportPPT: () => void;
-  onSave: () => void;
+  onNewPresentation: () => void;
+  lastSaved: Date;
 }
 
 export const TopNavigation: React.FC<TopNavigationProps> = ({
   presentation,
   onUpdatePresentation,
   onExportPPT,
-  onSave
+  onNewPresentation,
+  lastSaved
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState(presentation.title);
@@ -76,9 +80,10 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
           <Badge variant="secondary" className="text-xs">
             {presentation.slides.length} slides
           </Badge>
-          <span className="text-xs text-gray-500">
-            Last saved: {presentation.updatedAt.toLocaleTimeString()}
-          </span>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Check className="w-3 h-3 text-green-600" />
+            Auto-saved {lastSaved.toLocaleTimeString()}
+          </div>
         </div>
       </div>
 
@@ -101,9 +106,9 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
 
       {/* Right Section - Main Actions */}
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={onSave}>
-          <Save className="w-4 h-4 mr-2" />
-          Save
+        <Button variant="outline" size="sm" onClick={onNewPresentation}>
+          <Plus className="w-4 h-4 mr-2" />
+          New
         </Button>
 
         <Dialog>
@@ -148,6 +153,11 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onNewPresentation}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Presentation
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Settings className="w-4 h-4 mr-2" />
               Presentation Settings

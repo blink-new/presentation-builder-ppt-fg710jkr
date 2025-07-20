@@ -1,70 +1,267 @@
+import PptxGenJS from 'pptxgenjs';
 import { Presentation, Slide } from '../types/presentation';
 
-const generateMockPPTContent = (presentation: Presentation): string => {
-  // This is a simplified mock. In a real implementation, you would:
-  // 1. Use a library like PptxGenJS to create actual PPTX files
-  // 2. Convert slide content to PowerPoint format
-  // 3. Apply brand settings and styling
-  // 4. Handle images and media properly
-  
-  const slides = presentation.slides.map((slide, index) => {
-    return `
-Slide ${index + 1}: ${slide.title}
-Type: ${slide.type}
-Content: ${JSON.stringify(slide.content, null, 2)}
-Background: ${slide.background || 'default'}
----
-`;
-  }).join('\n');
-
-  return `
-PRESENTATION: ${presentation.title}
-Description: ${presentation.description || 'No description'}
-Created: ${presentation.createdAt.toISOString()}
-Updated: ${presentation.updatedAt.toISOString()}
-
-BRAND SETTINGS:
-Primary Color: ${presentation.brandSettings.primaryColor}
-Secondary Color: ${presentation.brandSettings.secondaryColor}
-Accent Color: ${presentation.brandSettings.accentColor}
-Font Family: ${presentation.brandSettings.fontFamily}
-Logo Position: ${presentation.brandSettings.logoPosition}
-
-SLIDES:
-${slides}
-
-Note: This is a mock export. In a production environment, this would generate a proper PPTX file.
-`;
+// Convert hex color to PowerPoint color format
+const hexToPptColor = (hex: string): string => {
+  return hex.replace('#', '');
 };
 
-// Mock PPT export functionality
-// In a real implementation, you would use a library like PptxGenJS or similar
+const createTitleSlide = (slide: any, slideData: Slide, brandSettings: any): void => {
+  // Main title
+  if (slideData.content.title) {
+    slide.addText(slideData.content.title, {
+      x: 0.5,
+      y: 2.5,
+      w: 9,
+      h: 1.5,
+      fontSize: 44,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.primaryColor || '#000000'),
+      bold: true,
+      align: 'center'
+    });
+  }
+
+  // Subtitle
+  if (slideData.content.subtitle) {
+    slide.addText(slideData.content.subtitle, {
+      x: 0.5,
+      y: 4.5,
+      w: 9,
+      h: 1,
+      fontSize: 24,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.secondaryColor || '#666666'),
+      align: 'center'
+    });
+  }
+};
+
+const createContentSlide = (slide: any, slideData: Slide, brandSettings: any): void => {
+  // Title
+  if (slideData.content.title) {
+    slide.addText(slideData.content.title, {
+      x: 0.5,
+      y: 0.5,
+      w: 9,
+      h: 1,
+      fontSize: 32,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.primaryColor || '#000000'),
+      bold: true
+    });
+  }
+
+  // Body content
+  if (slideData.content.body) {
+    // Split content into bullet points if it contains line breaks
+    const content = slideData.content.body;
+    const lines = content.split('\\n').filter(line => line.trim());
+    
+    if (lines.length > 1) {
+      // Create bullet points
+      const bulletPoints = lines.map(line => ({ text: line.trim(), options: { bullet: true } }));
+      slide.addText(bulletPoints, {
+        x: 0.5,
+        y: 2,
+        w: 9,
+        h: 4,
+        fontSize: 18,
+        fontFace: brandSettings.fontFamily || 'Arial',
+        color: hexToPptColor(brandSettings.secondaryColor || '#333333')
+      });
+    } else {
+      // Single paragraph
+      slide.addText(content, {
+        x: 0.5,
+        y: 2,
+        w: 9,
+        h: 4,
+        fontSize: 18,
+        fontFace: brandSettings.fontFamily || 'Arial',
+        color: hexToPptColor(brandSettings.secondaryColor || '#333333')
+      });
+    }
+  }
+};
+
+const createTwoColumnSlide = (slide: any, slideData: Slide, brandSettings: any): void => {
+  // Title
+  if (slideData.content.title) {
+    slide.addText(slideData.content.title, {
+      x: 0.5,
+      y: 0.5,
+      w: 9,
+      h: 1,
+      fontSize: 32,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.primaryColor || '#000000'),
+      bold: true
+    });
+  }
+
+  // Left column
+  if (slideData.content.leftColumn) {
+    slide.addText(slideData.content.leftColumn, {
+      x: 0.5,
+      y: 2,
+      w: 4.25,
+      h: 4,
+      fontSize: 18,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.secondaryColor || '#333333')
+    });
+  }
+
+  // Right column
+  if (slideData.content.rightColumn) {
+    slide.addText(slideData.content.rightColumn, {
+      x: 5.25,
+      y: 2,
+      w: 4.25,
+      h: 4,
+      fontSize: 18,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.secondaryColor || '#333333')
+    });
+  }
+};
+
+const createImageFocusSlide = (slide: any, slideData: Slide, brandSettings: any): void => {
+  // Title
+  if (slideData.content.title) {
+    slide.addText(slideData.content.title, {
+      x: 0.5,
+      y: 0.5,
+      w: 9,
+      h: 1,
+      fontSize: 32,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.primaryColor || '#000000'),
+      bold: true
+    });
+  }
+
+  // Image placeholder or actual image
+  if (slideData.content.imageUrl) {
+    try {
+      slide.addImage({
+        path: slideData.content.imageUrl,
+        x: 2,
+        y: 2,
+        w: 6,
+        h: 4
+      });
+    } catch (error) {
+      // If image fails to load, add a placeholder
+      slide.addText('Image: ' + (slideData.content.imageAlt || 'Image placeholder'), {
+        x: 2,
+        y: 2,
+        w: 6,
+        h: 4,
+        fontSize: 16,
+        fontFace: brandSettings.fontFamily || 'Arial',
+        color: hexToPptColor('#999999'),
+        align: 'center',
+        valign: 'middle',
+        border: { pt: 1, color: hexToPptColor('#CCCCCC') }
+      });
+    }
+  } else {
+    // Image placeholder
+    slide.addText('Image Placeholder', {
+      x: 2,
+      y: 2,
+      w: 6,
+      h: 4,
+      fontSize: 16,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor('#999999'),
+      align: 'center',
+      valign: 'middle',
+      border: { pt: 1, color: hexToPptColor('#CCCCCC') }
+    });
+  }
+};
+
+const createBlankSlide = (slide: any, slideData: Slide, brandSettings: any): void => {
+  // Just add the title if it exists
+  if (slideData.title && slideData.title.trim()) {
+    slide.addText(slideData.title, {
+      x: 0.5,
+      y: 0.5,
+      w: 9,
+      h: 1,
+      fontSize: 32,
+      fontFace: brandSettings.fontFamily || 'Arial',
+      color: hexToPptColor(brandSettings.primaryColor || '#000000'),
+      bold: true
+    });
+  }
+};
+
+// Convert slide content to PowerPoint slide
+const createSlideFromTemplate = (pptx: PptxGenJS, slide: Slide, brandSettings: any): void => {
+  const pptSlide = pptx.addSlide();
+  
+  // Set slide background if specified
+  if (slide.background && slide.background !== 'white') {
+    pptSlide.background = { color: hexToPptColor(slide.background) };
+  }
+
+  switch (slide.type) {
+    case 'title':
+      createTitleSlide(pptSlide, slide, brandSettings);
+      break;
+    case 'content':
+      createContentSlide(pptSlide, slide, brandSettings);
+      break;
+    case 'two-column':
+      createTwoColumnSlide(pptSlide, slide, brandSettings);
+      break;
+    case 'image-focus':
+      createImageFocusSlide(pptSlide, slide, brandSettings);
+      break;
+    case 'blank':
+      createBlankSlide(pptSlide, slide, brandSettings);
+      break;
+    default:
+      createContentSlide(pptSlide, slide, brandSettings);
+  }
+};
+
+// Main export function
 export const exportToPPT = async (presentation: Presentation): Promise<void> => {
   try {
-    // Simulate export process
     console.log('Starting PPT export for:', presentation.title);
     
-    // Create a mock download
-    const mockPptContent = generateMockPPTContent(presentation);
-    const blob = new Blob([mockPptContent], { 
-      type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' 
+    // Create new presentation
+    const pptx = new PptxGenJS();
+    
+    // Set presentation properties
+    pptx.author = 'Presentation Builder';
+    pptx.company = 'Blink';
+    pptx.title = presentation.title;
+    pptx.subject = presentation.description || 'Created with Presentation Builder';
+    
+    // Set default slide size (16:9)
+    pptx.defineLayout({ name: 'LAYOUT_16x9', width: 10, height: 5.625 });
+    pptx.layout = 'LAYOUT_16x9';
+    
+    // Add slides
+    presentation.slides.forEach((slide) => {
+      createSlideFromTemplate(pptx, slide, presentation.brandSettings);
     });
     
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${presentation.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pptx`;
+    // Generate and download the file
+    const fileName = `${presentation.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pptx`;
     
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    URL.revokeObjectURL(url);
+    await pptx.writeFile({ fileName });
     
     console.log('PPT export completed successfully');
   } catch (error) {
     console.error('Error exporting to PPT:', error);
-    throw new Error('Failed to export presentation to PowerPoint format');
+    throw new Error('Failed to export presentation to PowerPoint format. Please try again.');
   }
 };
 
