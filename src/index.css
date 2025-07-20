@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 98%;
+  --foreground: 222 84% 5%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 84% 5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 84% 5%;
+  --primary: 239 84% 67%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 84% 5%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 43 96% 56%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 239 84% 67%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 217 33% 17%;
+  --foreground: 210 40% 98%;
+  --card: 217 33% 17%;
+  --card-foreground: 210 40% 98%;
+  --popover: 217 33% 17%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 239 84% 67%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217 19% 27%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 19% 27%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 43 96% 56%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 19% 27%;
+  --input: 217 19% 27%;
+  --ring: 239 84% 67%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom styles for the presentation builder */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(hsl(0deg 0% 0% / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(0deg 0% 0% / 10%) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Smooth transitions for interactive elements */
+.slide-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.slide-item:hover {
+  transform: translateY(-1px);
+}
+
+/* Custom scrollbar for slide navigator */
+.slide-navigator::-webkit-scrollbar {
+  width: 6px;
+}
+
+.slide-navigator::-webkit-scrollbar-track {
+  background: hsl(214deg 32% 91%);
+}
+
+.slide-navigator::-webkit-scrollbar-thumb {
+  background: hsl(215deg 16% 47%);
+  border-radius: 3px;
+}
+
+.slide-navigator::-webkit-scrollbar-thumb:hover {
+  background: hsl(215deg 20% 65%);
+}
+
+/* Text selection styling */
+::selection {
+  background-color: hsl(var(--primary) / 20%);
+}
+
+/* Focus styles for accessibility */
+.focus-visible:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Animation for slide transitions */
+@keyframes slide-in {
+  from {
+    opacity: 0%;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateX(0);
+  }
+}
+
+.slide-enter {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Utility classes for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom button hover effects */
+.btn-hover-lift {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.btn-hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(0deg 0% 0% / 15%);
+}
+
+/* Slide canvas specific styles */
+.slide-canvas {
+  background: linear-gradient(135deg, hsl(210deg 40% 98%) 0%, hsl(214deg 32% 91%) 100%);
+}
+
+/* Brand color preview circles */
+.color-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid hsl(214deg 32% 91%);
+  transition: border-color 0.2s ease-in-out;
+}
+
+.color-preview:hover {
+  border-color: hsl(var(--primary));
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, hsl(214deg 32% 91%) 25%, hsl(215deg 16% 47%) 50%, hsl(214deg 32% 91%) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive design helpers */
+@media (width <= 768px) {
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-full {
+    width: 100%;
+  }
+}
+
+/* Print styles for presentation mode */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .slide-canvas {
+    background: white !important;
+    box-shadow: none !important;
+  }
+}
